@@ -24,6 +24,38 @@ export KUBECONFIG=~/.kube/config
 kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
+## Make a Application YAML files for ARGO CD Configurations. For e.g
+```
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: myapp-argo-application
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: https://gitlab.com/nanuchi/argocd-app-config.git
+    targetRevision: HEAD
+    path: dev
+  destination: 
+    server: https://kubernetes.default.svc
+    namespace: myapp
+
+  syncPolicy:
+    syncOptions:
+    - CreateNamespace=true
+
+    automated:
+      selfHeal: true
+      prune: true
+```
+
+### Apply the application.yaml file to apply changes and view the flow in dashboard
+```
+kubectl apply -f application.yaml
+```
+
 ## Change Service to NodePort
 ### Edit the service can change the service type from ClusterIP to NodePort
 ```
@@ -125,30 +157,3 @@ curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/lat
 sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
 rm argocd-linux-amd64
 ```
-#### Login to ArgoCD from the CLI and change the password
-Remember to swap your domain name below
-
-
-argocd login argocd.dev.dman.cloud
-Update password
-1
-
-argocd account update-password
-Deploy Demo Application¶
-You can use the below repository to deploy a demo nginx application
-
-This repository has a sample application
-1
-
-https://github.com/dmancloud/argocd-tutorial
-Scale Replicaset¶
-Run from shell prompt
-1
-
-kubectl scale --replicas=3 deployment nginx -n default
-Clean Up¶
-Run from shell prompt
-12
-
-kubectl delete -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-kubectl delete namespace argocd
